@@ -85,7 +85,7 @@ app.innerHTML=`
  <label>Location / address<input id="f_loc" autocomplete="street-address"></label>
  <label>Notes (optional)<textarea id="f_note" rows="2"></textarea></label>
  <a id="wa" class="btn" target="_blank" rel="noopener" aria-disabled="true">Book via WhatsApp</a>
- <p class="muted small" style="margin-bottom:0">No account needed. This opens a WhatsApp chat with Trifena, who will confirm your booking there.</p>
+ <p class="muted small" style="margin-bottom:0">This opens a WhatsApp chat with TrifenaMUA, who will confirm your booking there.</p>
 </section>
 `;
 
@@ -108,10 +108,10 @@ function link(){
   $('picked').textContent=sel?'Selected date: '+nice(sel):'Pick a highlighted date above.';
   const num=String(S.wa).replace(/\D/g,'');
   if(!sel||!name||!num){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
-  const lines=['Hello Trifena, I’d like to book a makeup session.','','Name: '+name,'Date: '+nice(sel),'Service: '+$('f_service').value];
-  if($('f_time').value)lines.push('Time: '+$('f_time').value);
-  if($('f_loc').value.trim())lines.push('Location: '+$('f_loc').value.trim());
-  if($('f_note').value.trim())lines.push('Notes: '+$('f_note').value.trim());
+  const lines=['Halo, Kak, Aku mau book untuk makeup. Untuk detailnya:','','Nama: '+name,'Tanggal: '+nice(sel),'Acara: '+$('f_service').value];
+  if($('f_time').value)lines.push('Pukul: '+$('f_time').value);
+  if($('f_loc').value.trim())lines.push('Alamat: '+$('f_loc').value.trim());
+  if($('f_note').value.trim())lines.push('Keterangan: '+$('f_note').value.trim());
   a.href='https://wa.me/'+num+'?text='+encodeURIComponent(lines.join('\n'));
   a.setAttribute('aria-disabled','false');
 }
