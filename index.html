@@ -15,6 +15,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-ap
 #app{max-width:520px;margin:0 auto;padding:20px 16px 40px}
 header{text-align:center;margin-bottom:18px}
 header .logo{font-size:34px}
+  .logo-img{display:block;margin:0 auto 6px;height:80px;max-width:100%;object-fit:contain}
 h1{font:600 30px/1.2 Georgia,"Times New Roman",serif;margin:4px 0;letter-spacing:.5px}
 h2{font-size:17px;margin:0}
 .muted{color:var(--muted)}.small{font-size:13px}
@@ -50,7 +51,7 @@ const S={
   // WhatsApp Business number: country code + number, digits only (no + or spaces)
   wa:"6281233370602",
   // Services shown in the dropdown
-  services:["Wedding Makeup","Engagement / Prewedding","Graduation / Party","Photoshoot"],
+  services:["Wedding","Pre Wedding","Engagement","Birthday Party","Graduation","Photoshoot","Makeup For Men"],
   // Available dates, format "YYYY-MM-DD". Add a date to open it, delete a date to close it.
   available:[
     "2026-11-14","2026-11-15",
@@ -70,7 +71,8 @@ const nice=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).t
 const $=id=>document.getElementById(id);
 
 app.innerHTML=`
-<header><div class="logo">💄</div><h1>Trifena</h1><p class="muted" style="margin:0">Makeup Artist · Book your session</p></header>
+<header ><img src="logo1.png" alt="Trifena logo" class="logo-img"><h1>Trifena</h1><p class="muted" style="margin:0">Makeup Artist · Book your session</p></header>
+
 <section class="card" id="calcard">
  <div class="nav"><button id="prev" aria-label="Previous month">‹</button><h2 id="mtitle"></h2><button id="next" aria-label="Next month">›</button></div>
  <div class="grid" id="dow"></div><div class="grid" id="days"></div>
@@ -81,9 +83,10 @@ app.innerHTML=`
  <p id="picked" class="muted" style="margin:6px 0 0">Pick a highlighted date above.</p>
  <label>Name<input id="f_name" autocomplete="name"></label>
  <label>Service<select id="f_service"></select></label>
- <label>Preferred time<input id="f_time" type="time"></label>
- <label>Location / address<input id="f_loc" autocomplete="street-address"></label>
- <label>Notes (optional)<textarea id="f_note" rows="2"></textarea></label>
+ <label class="chk"><input type="checkbox" id="f_hair"> Add hairdo (additional)</label>
+ <label>Preffered finish time<input id="f_time" type="time"></label>
+ <label>Location / address makeup<input id="f_loc" autocomplete="street-address"></label>
+ <label>Notes (if you had skin issues, if you need contact lenses, etc.)<textarea id="f_note" rows="2"></textarea></label>
  <a id="wa" class="btn" target="_blank" rel="noopener" aria-disabled="true">Book via WhatsApp</a>
  <p class="muted small" style="margin-bottom:0">This opens a WhatsApp chat with TrifenaMUA, who will confirm your booking there.</p>
 </section>
@@ -109,8 +112,9 @@ function link(){
   const num=String(S.wa).replace(/\D/g,'');
   if(!sel||!name||!num){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
   const lines=['Halo, Kak, Aku mau book untuk makeup. Untuk detailnya:','','Nama: '+name,'Tanggal: '+nice(sel),'Acara: '+$('f_service').value];
-  if($('f_time').value)lines.push('Pukul: '+$('f_time').value);
-  if($('f_loc').value.trim())lines.push('Alamat: '+$('f_loc').value.trim());
+  if($('f_hair').checked)lines.push('Additional hairdo: Ya');
+  if($('f_time').value)lines.push('Harus siap jam: '+$('f_time').value);
+  if($('f_loc').value.trim())lines.push('Alamat makeup: '+$('f_loc').value.trim());
   if($('f_note').value.trim())lines.push('Keterangan: '+$('f_note').value.trim());
   a.href='https://wa.me/'+num+'?text='+encodeURIComponent(lines.join('\n'));
   a.setAttribute('aria-disabled','false');
@@ -124,7 +128,7 @@ $('days').addEventListener('click',e=>{
 });
 $('prev').onclick=()=>{vm--;if(vm<0){vm=11;vy--}cal()};
 $('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++}cal()};
-['f_name','f_service','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
+['f_name','f_service','f_hair','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
 cal();link();
 
 </script>
