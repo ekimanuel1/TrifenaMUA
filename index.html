@@ -71,8 +71,7 @@ const nice=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).t
 const $=id=>document.getElementById(id);
 
 app.innerHTML=`
-<header ><img src="logo1.png" alt="Trifena logo" class="logo-img"><h1>Trifena</h1><p class="muted" style="margin:0">Makeup Artist · Book your session</p></header>
-
+<header ><img src="logo1.png" alt="Trifena logo" class="logo-img"><p class="muted" style="margin:0">Book your session</p></header>
 <section class="card" id="calcard">
  <div class="nav"><button id="prev" aria-label="Previous month">‹</button><h2 id="mtitle"></h2><button id="next" aria-label="Next month">›</button></div>
  <div class="grid" id="dow"></div><div class="grid" id="days"></div>
@@ -84,7 +83,7 @@ app.innerHTML=`
  <label>Name<input id="f_name" autocomplete="name"></label>
  <label>Service<select id="f_service"></select></label>
  <label class="chk"><input type="checkbox" id="f_hair"> Add hairdo (additional)</label>
- <label>Preffered finish time<input id="f_time" type="time"></label>
+ <label>Preferred finish time<input id="f_time" type="time"></label>
  <label>Location / address makeup<input id="f_loc" autocomplete="street-address"></label>
  <label>Notes (if you had skin issues, if you need contact lenses, etc.)<textarea id="f_note" rows="2"></textarea></label>
  <a id="wa" class="btn" target="_blank" rel="noopener" aria-disabled="true">Book via WhatsApp</a>
