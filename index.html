@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trifena Makeup Artist – Book Your Session</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#fff7f8;--card:#ffffff;--text:#2b2024;--muted:#8a7780;--line:#f0dfe3;--accent:#c2476b;--accent-soft:#fde3ea;--wa:#1faa59;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1417;--card:#281c21;--text:#f6e9ed;--muted:#a58f98;--line:#3b2a31;--accent:#ee7a9c;--accent-soft:#4a2433;--wa:#2ec36d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1c1417;--card:#281c21;--text:#f6e9ed;--muted:#a58f98;--line:#3b2a31;--accent:#ee7a9c;--accent-soft:#4a2433;--wa:#2ec36d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:520px;margin:0 auto;padding:20px 16px 40px}
+header{text-align:center;margin-bottom:18px}
+header .logo{font-size:34px}
+h1{font:600 30px/1.2 Georgia,"Times New Roman",serif;margin:4px 0;letter-spacing:.5px}
+h2{font-size:17px;margin:0}
+.muted{color:var(--muted)}.small{font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nav button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:20px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dow{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
+.day{aspect-ratio:1;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--muted);font:inherit;cursor:default;padding:0}
+.day.past{opacity:.35}
+.day.av{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:700;cursor:pointer}
+.day.sel{background:var(--accent);color:#fff}
+.edit .day:not(.past){cursor:pointer;border:1px dashed var(--line)}
+.edit .day.av{border:1px solid var(--accent)}
+.today{text-decoration:underline}
+.legend{display:flex;gap:16px;margin-top:12px;font-size:13px;color:var(--muted)}
+.k{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px;border:1px solid var(--line)}
+.k.av{background:var(--accent-soft);border-color:var(--accent)}
+label{display:block;font-size:14px;margin:12px 0 0}
+input,select,textarea{width:100%;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
+.btn{display:block;text-align:center;margin-top:16px;padding:13px;border-radius:12px;background:var(--wa);color:#fff;font-weight:600;text-decoration:none;border:0;width:100%;font-size:16px;cursor:pointer}
+.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.btn.alt{background:var(--accent)}
+.chk{display:flex;align-items:center;gap:8px;margin:12px 0 0}.chk input{width:auto;margin:0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ===== EDIT HERE ===== */
+const S={
+  // WhatsApp Business number: country code + number, digits only (no + or spaces)
+  wa:"6281234567890",
+  // Services shown in the dropdown
+  services:["Wedding Makeup","Engagement / Prewedding","Graduation / Party","Photoshoot"],
+  // Available dates, format "YYYY-MM-DD". Add a date to open it, delete a date to close it.
+  available:[
+    "2026-11-14","2026-11-15",
+    "2026-11-21","2026-11-22",
+    "2026-11-28","2026-11-29"
+  ]
+};
+/* ===== END EDIT ===== */
+const app=document.getElementById('app');
+const A=new Set(S.available);
+let editing=false,isAdmin=false,sel=null;
+const now=new Date();
+const key=(y,m,d)=>y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+const todayKey=key(now.getFullYear(),now.getMonth(),now.getDate());
+let vy=now.getFullYear(),vm=now.getMonth();
+const nice=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})};
+const $=id=>document.getElementById(id);
+
+app.innerHTML=`
+<header><div class="logo">💄</div><h1>Trifena</h1><p class="muted" style="margin:0">Makeup Artist · Book your session</p></header>
+<section class="card" id="calcard">
+ <div class="nav"><button id="prev" aria-label="Previous month">‹</button><h2 id="mtitle"></h2><button id="next" aria-label="Next month">›</button></div>
+ <div class="grid" id="dow"></div><div class="grid" id="days"></div>
+ <div class="legend"><span><i class="k av"></i>Available</span><span><i class="k"></i>Not available</span></div>
+</section>
+<section class="card" id="formcard">
+ <h2>Your details</h2>
+ <p id="picked" class="muted" style="margin:6px 0 0">Pick a highlighted date above.</p>
+ <label>Name<input id="f_name" autocomplete="name"></label>
+ <label>Service<select id="f_service"></select></label>
+ <label>Preferred time<input id="f_time" type="time"></label>
+ <label>Location / address<input id="f_loc" autocomplete="street-address"></label>
+ <label>Notes (optional)<textarea id="f_note" rows="2"></textarea></label>
+ <a id="wa" class="btn" target="_blank" rel="noopener" aria-disabled="true">Book via WhatsApp</a>
+ <p class="muted small" style="margin-bottom:0">No account needed. This opens a WhatsApp chat with Trifena, who will confirm your booking there.</p>
+</section>
+`;
+
+$('dow').innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>'<div class="dow">'+d+'</div>').join('');
+S.services.forEach(s=>{const o=document.createElement('option');o.textContent=s;$('f_service').appendChild(o)});
+
+function cal(){
+  $('mtitle').textContent=new Date(vy,vm,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  $('calcard').classList.toggle('edit',editing);
+  const first=(new Date(vy,vm,1).getDay()+6)%7,n=new Date(vy,vm+1,0).getDate();
+  let h='';for(let i=0;i<first;i++)h+='<div></div>';
+  for(let d=1;d<=n;d++){
+    const k=key(vy,vm,d),past=k<todayKey,av=A.has(k);
+    h+='<button type="button" class="day'+(past?' past':'')+(av?' av':'')+(k===sel?' sel':'')+(k===todayKey?' today':'')+'" data-k="'+k+'"'+(past?' disabled':'')+'>'+d+'</button>';
+  }
+  $('days').innerHTML=h;
+}
+function link(){
+  const a=$('wa'),name=$('f_name').value.trim();
+  $('picked').textContent=sel?'Selected date: '+nice(sel):'Pick a highlighted date above.';
+  const num=String(S.wa).replace(/\D/g,'');
+  if(!sel||!name||!num){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
+  const lines=['Hello Trifena, I’d like to book a makeup session.','','Name: '+name,'Date: '+nice(sel),'Service: '+$('f_service').value];
+  if($('f_time').value)lines.push('Time: '+$('f_time').value);
+  if($('f_loc').value.trim())lines.push('Location: '+$('f_loc').value.trim());
+  if($('f_note').value.trim())lines.push('Notes: '+$('f_note').value.trim());
+  a.href='https://wa.me/'+num+'?text='+encodeURIComponent(lines.join('\n'));
+  a.setAttribute('aria-disabled','false');
+}
+$('days').addEventListener('click',e=>{
+  const b=e.target.closest('.day');if(!b||b.disabled)return;
+  const k=b.dataset.k;
+  if(editing){A.has(k)?A.delete(k):A.add(k)}
+  else if(A.has(k)){sel=k}else return;
+  cal();link();
+});
+$('prev').onclick=()=>{vm--;if(vm<0){vm=11;vy--}cal()};
+$('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++}cal()};
+['f_name','f_service','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
+cal();link();
+
+</script>
+</body>
+</html>
