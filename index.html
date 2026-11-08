@@ -38,6 +38,7 @@ label{display:block;font-size:14px;margin:12px 0 0}
 input,select,textarea{width:100%;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
 .btn{display:block;text-align:center;margin-top:16px;padding:13px;border-radius:12px;background:var(--wa);color:#fff;font-weight:600;text-decoration:none;border:0;width:100%;font-size:16px;cursor:pointer}
 .btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+  label:has(input:disabled){opacity:.45}
 .btn.alt{background:var(--accent)}
 .chk{display:flex;align-items:center;gap:8px;margin:12px 0 0}.chk input{width:auto;margin:0}
 [hidden]{display:none!important}
@@ -115,6 +116,7 @@ function cal(){
 function link(){
   const a=$('wa'),name=$('f_name').value.trim();
   const svc=$('f_service').value,isW=svc==='Wedding',isO=svc==='Other';
+  $('f_people').disabled=!svc;$('f_hair').disabled=!svc;
   $('wed_box').hidden=!isW;$('oth_box').hidden=!isO;
   const who=[...document.querySelectorAll('.wed:checked')].map(c=>c.value).join(', ');
   const other=$('f_other').value.trim();
