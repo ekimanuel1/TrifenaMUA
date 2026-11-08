@@ -123,13 +123,13 @@ function link(){
   $('picked').textContent=sel?'Selected date: '+nice(sel):'Pick a highlighted date above.';
   const num=String(S.wa).replace(/\D/g,'');
   if(!sel||!name||!num||!svc||(isO&&!other)){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
-  const lines=['Hello Trifena, I’d like to book a makeup session.','','Name: '+name,'Date: '+nice(sel),'Service: '+(isO?'Other ('+other+')':svc)];
-  if(isW&&who)lines.push('Makeup for: '+who);
-  if($('f_people').value)lines.push('Number of people: '+$('f_people').value);
-  if($('f_hair').checked)lines.push('Additional hairdo: Yes');
-  if($('f_time').value)lines.push('Time: '+$('f_time').value);
-  if($('f_loc').value.trim())lines.push('Location: '+$('f_loc').value.trim());
-  if($('f_note').value.trim())lines.push('Notes: '+$('f_note').value.trim());
+      const lines=['Halo, Kak, aku pengen booking makeup. Detailnya:','','Nama: '+name,'Tanggal: '+nice(sel),'Untuk acara: '+(isO?other:svc)];
+      if(isW&&who)lines.push('Makeup untuk:',...who.split(', ').map(w=>'- '+w));
+      if($('f_people').value)lines.push('Jumlah orang: '+$('f_people').value);
+      if($('f_hair').checked)lines.push('Additional hairdo: Ya');
+      if($('f_time').value)lines.push('Jam harus selesai: '+$('f_time').value);
+      if($('f_loc').value.trim())lines.push('Lokasi makeup: '+$('f_loc').value.trim());
+      if($('f_note').value.trim())lines.push('Keterangan lain: '+$('f_note').value.trim());
   a.href='https://wa.me/'+num+'?text='+encodeURIComponent(lines.join('\n'));
   a.setAttribute('aria-disabled','false');
 }
