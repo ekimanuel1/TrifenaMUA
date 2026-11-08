@@ -129,7 +129,9 @@ $('prev').onclick=()=>{vm--;if(vm<0){vm=11;vy--}cal()};
 $('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++}cal()};
 ['f_name','f_service','f_hair','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
 cal();link();
-
+fetch('availability.json?'+Date.now()).then(r=>r.json()).then(j=>{
+  if(Array.isArray(j.available)){A.clear();j.available.forEach(d=>A.add(d));if(!A.has(sel))sel=null;cal();link();}
+}).catch(()=>{});
 </script>
 </body>
 </html>
