@@ -98,8 +98,9 @@ app.innerHTML=`
 `;
 
 $('dow').innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>'<div class="dow">'+d+'</div>').join('');
+const ph=document.createElement('option');ph.value='';ph.textContent='Choose a service';ph.disabled=true;ph.selected=true;$('f_service').appendChild(ph);
 S.services.forEach(s=>{const o=document.createElement('option');o.textContent=s;$('f_service').appendChild(o)});
-
+  
 function cal(){
   $('mtitle').textContent=new Date(vy,vm,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
   $('calcard').classList.toggle('edit',editing);
@@ -119,7 +120,7 @@ function link(){
   const other=$('f_other').value.trim();
   $('picked').textContent=sel?'Selected date: '+nice(sel):'Pick a highlighted date above.';
   const num=String(S.wa).replace(/\D/g,'');
-  if(!sel||!name||!num||(isO&&!other)){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
+  if(!sel||!name||!num||!svc||(isO&&!other)){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
   const lines=['Hello Trifena, I’d like to book a makeup session.','','Name: '+name,'Date: '+nice(sel),'Service: '+(isO?'Other ('+other+')':svc)];
   if(isW&&who)lines.push('Makeup for: '+who);
   if($('f_people').value)lines.push('Number of people: '+$('f_people').value);
