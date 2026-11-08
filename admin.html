@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Trifena Admin</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#fff7f8;--card:#ffffff;--text:#2b2024;--muted:#8a7780;--line:#f0dfe3;--accent:#c2476b;--accent-soft:#fde3ea;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1417;--card:#281c21;--text:#f6e9ed;--muted:#a58f98;--line:#3b2a31;--accent:#ee7a9c;--accent-soft:#4a2433;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:520px;margin:0 auto;padding:20px 16px 40px}
+h1{font:600 28px/1.2 Georgia,serif;margin:0;text-align:center}
+h2{font-size:17px;margin:0}
+.muted{color:var(--muted)}.small{font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0}
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nav button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:20px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dow{text-align:center;font-size:12px;color:var(--muted);padding:4px 0}
+.day{aspect-ratio:1;border-radius:10px;border:1px dashed var(--line);background:transparent;color:var(--text);font:inherit;cursor:pointer;padding:0}
+.day.past{opacity:.3;cursor:default;border-color:transparent}
+.day.av{background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);font-weight:700}
+label{display:block;font-size:14px;margin:12px 0 0}
+input{width:100%;margin-top:4px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
+.btn{display:block;width:100%;margin-top:14px;padding:13px;border-radius:12px;background:var(--accent);color:#fff;font:600 16px inherit;border:0;cursor:pointer}
+.btn:disabled{opacity:.5}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;display:block;margin:6px auto 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="app">
+<h1>Trifena Admin</h1>
+<p class="muted" style="text-align:center;margin:4px 0 0">Edit available dates</p>
+
+<section class="card" id="setup" hidden>
+ <h2>First-time setup</h2>
+ <p class="muted small">Paste a GitHub token that can edit this repository. It is saved only in this browser, never in the page.</p>
+ <label>Repository (username/repository-name)<input id="repo" value="ekimanuel1/" autocapitalize="off" autocomplete="off"></label>
+ <label>GitHub token<input id="tok" type="password" autocomplete="off"></label>
+ <button class="btn" id="go" type="button">Continue</button>
+ <p class="muted small" id="smsg"></p>
+</section>
+
+<section id="main" hidden>
+ <div class="card">
+  <div class="nav"><button id="prev" type="button" aria-label="Previous month">‹</button><h2 id="mt"></h2><button id="next" type="button" aria-label="Next month">›</button></div>
+  <div class="grid" id="dow"></div><div class="grid" id="days"></div>
+  <p class="muted small" style="margin-bottom:0">Tap a date to open or close it. Highlighted dates are open for booking.</p>
+ </div>
+ <button class="btn" id="save" type="button">Save dates</button>
+ <p class="muted small" id="msg" style="text-align:center"></p>
+ <button class="link" id="out" type="button">Log out of this device</button>
+</section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let repo='',tok='',sha=null,A=new Set();
+const now=new Date();
+const key=(y,m,d)=>y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+const today=key(now.getFullYear(),now.getMonth(),now.getDate());
+let vy=now.getFullYear(),vm=now.getMonth();
+const get=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+const put=(k,v)=>{try{v===null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}};
+const api='https://api.github.com/repos/';
+const hdr=()=>({Authorization:'Bearer '+tok,Accept:'application/vnd.github+json'});
+const url=()=>api+repo+'/contents/availability.json';
+
+$('dow').innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>'<div class="dow">'+d+'</div>').join('');
+function cal(){
+  $('mt').textContent=new Date(vy,vm,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const first=(new Date(vy,vm,1).getDay()+6)%7,n=new Date(vy,vm+1,0).getDate();
+  let h='';for(let i=0;i<first;i++)h+='<div></div>';
+  for(let d=1;d<=n;d++){const k=key(vy,vm,d),p=k<today;
+    h+='<button type="button" class="day'+(p?' past':'')+(A.has(k)?' av':'')+'" data-k="'+k+'"'+(p?' disabled':'')+'>'+d+'</button>';}
+  $('days').innerHTML=h;
+}
+$('days').onclick=e=>{const b=e.target.closest('.day');if(!b||b.disabled)return;const k=b.dataset.k;A.has(k)?A.delete(k):A.add(k);cal();$('msg').textContent=''};
+$('prev').onclick=()=>{vm--;if(vm<0){vm=11;vy--}cal()};
+$('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++}cal()};
+
+async function load(){
+  const r=await fetch(url(),{headers:hdr(),cache:'no-store'});
+  if(r.ok){const j=await r.json();sha=j.sha;A=new Set((JSON.parse(atob(j.content.replace(/\s/g,''))).available)||[]);}
+  else if(r.status===404){
+    const c=await fetch(api+repo,{headers:hdr()});
+    if(!c.ok)throw new Error('repo');
+    sha=null;A=new Set();
+  }else throw new Error(String(r.status));
+}
+async function start(){
+  $('setup').hidden=true;$('main').hidden=false;$('msg').textContent='Loading…';
+  try{await load();cal();$('msg').textContent=''}
+  catch(e){
+    $('main').hidden=true;$('setup').hidden=false;
+    $('smsg').textContent=(e.message==='401')?'The token is not valid or has expired. Please make a new one.':'Could not open the repository. Check the repository name and the token permission.';
+  }
+}
+$('go').onclick=()=>{
+  repo=$('repo').value.trim().replace(/^\/+|\/+$/g,'');tok=$('tok').value.trim();
+  if(!/^[^/\s]+\/[^/\s]+$/.test(repo)||!tok){$('smsg').textContent='Please fill in both fields.';return}
+  put('t_repo',repo);put('t_tok',tok);start();
+};
+$('save').onclick=async()=>{
+  const b=$('save');b.disabled=true;$('msg').textContent='Saving…';
+  try{
+    const body={message:'Update available dates',content:btoa(JSON.stringify({available:[...A].sort()},null,2)+'\n')};
+    if(sha)body.sha=sha;
+    const r=await fetch(url(),{method:'PUT',headers:{...hdr(),'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){const j=await r.json();sha=j.content.sha;$('msg').textContent='Saved. Customers will see the new dates in 1–2 minutes.'}
+    else if(r.status===401)$('msg').textContent='The token is not valid or has expired.';
+    else if(r.status===409||r.status===422)$('msg').textContent='The file changed elsewhere. Reload this page and try again.';
+    else $('msg').textContent='Could not save (error '+r.status+'). Check the token permission.';
+  }catch(e){$('msg').textContent='No connection. Please try again.'}
+  b.disabled=false;
+};
+$('out').onclick=()=>{put('t_repo',null);put('t_tok',null);location.reload()};
+
+repo=get('t_repo');tok=get('t_tok');
+if(repo&&tok)start();else $('setup').hidden=false;
+</script>
+</body>
+</html>
