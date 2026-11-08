@@ -51,13 +51,9 @@ const S={
   // WhatsApp Business number: country code + number, digits only (no + or spaces)
   wa:"6281233370602",
   // Services shown in the dropdown
-  services:["Wedding","Pre Wedding","Engagement","Birthday Party","Graduation","Photoshoot","Makeup For Men"],
+  services:["Wedding","Pre Wedding","Engagement","Birthday Party","Graduation","Photoshoot","Makeup For Men", "Other"],
   // Available dates, format "YYYY-MM-DD". Add a date to open it, delete a date to close it.
-  available:[
-    "2026-11-14","2026-11-15",
-    "2026-11-21","2026-11-22",
-    "2026-11-28","2026-11-29"
-  ]
+  available:[]
 };
 /* ===== END EDIT ===== */
 const app=document.getElementById('app');
@@ -82,6 +78,15 @@ app.innerHTML=`
  <p id="picked" class="muted" style="margin:6px 0 0">Pick a highlighted date above.</p>
  <label>Name<input id="f_name" autocomplete="name"></label>
  <label>Service<select id="f_service"></select></label>
+     <div id="wed_box" hidden>
+     <p class="muted small" style="margin:12px 0 0">Makeup for (choose one or more)</p>
+     <label class="chk"><input type="checkbox" class="wed" value="Bride"> Bride</label>
+     <label class="chk"><input type="checkbox" class="wed" value="Mom’s Bride"> Mom’s Bride</label>
+     <label class="chk"><input type="checkbox" class="wed" value="Mom’s Groom"> Mom’s Groom</label>
+     <label class="chk"><input type="checkbox" class="wed" value="Sister’s Bride"> Sister’s Bride</label>
+     <label class="chk"><input type="checkbox" class="wed" value="Sister’s Groom"> Sister’s Groom</label>
+    </div>
+    <label id="oth_box" hidden>Please describe the service<input id="f_other"></label>
  <label class="chk"><input type="checkbox" id="f_hair"> Add hairdo (additional)</label>
  <label>Preferred finish time<input id="f_time" type="time"></label>
  <label>Location / address makeup<input id="f_loc" autocomplete="street-address"></label>
@@ -107,14 +112,19 @@ function cal(){
 }
 function link(){
   const a=$('wa'),name=$('f_name').value.trim();
+  const svc=$('f_service').value,isW=svc==='Wedding',isO=svc==='Other';
+  $('wed_box').hidden=!isW;$('oth_box').hidden=!isO;
+  const who=[...document.querySelectorAll('.wed:checked')].map(c=>c.value).join(', ');
+  const other=$('f_other').value.trim();
   $('picked').textContent=sel?'Selected date: '+nice(sel):'Pick a highlighted date above.';
   const num=String(S.wa).replace(/\D/g,'');
-  if(!sel||!name||!num){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
-  const lines=['Halo, Kak, Aku mau book untuk makeup. Untuk detailnya:','','Nama: '+name,'Tanggal: '+nice(sel),'Acara: '+$('f_service').value];
-  if($('f_hair').checked)lines.push('Additional hairdo: Ya');
-  if($('f_time').value)lines.push('Harus siap jam: '+$('f_time').value);
-  if($('f_loc').value.trim())lines.push('Alamat makeup: '+$('f_loc').value.trim());
-  if($('f_note').value.trim())lines.push('Keterangan: '+$('f_note').value.trim());
+  if(!sel||!name||!num||(isO&&!other)){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
+  const lines=['Hello Trifena, I’d like to book a makeup session.','','Name: '+name,'Date: '+nice(sel),'Service: '+(isO?'Other ('+other+')':svc)];
+  if(isW&&who)lines.push('Makeup for: '+who);
+  if($('f_hair').checked)lines.push('Additional hairdo: Yes');
+  if($('f_time').value)lines.push('Time: '+$('f_time').value);
+  if($('f_loc').value.trim())lines.push('Location: '+$('f_loc').value.trim());
+  if($('f_note').value.trim())lines.push('Notes: '+$('f_note').value.trim());
   a.href='https://wa.me/'+num+'?text='+encodeURIComponent(lines.join('\n'));
   a.setAttribute('aria-disabled','false');
 }
@@ -127,7 +137,8 @@ $('days').addEventListener('click',e=>{
 });
 $('prev').onclick=()=>{vm--;if(vm<0){vm=11;vy--}cal()};
 $('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++}cal()};
-['f_name','f_service','f_hair','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
+['f_name','f_service','f_other','f_hair','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
+document.querySelectorAll('.wed').forEach(c=>c.addEventListener('input',link));
 cal();link();
 fetch('availability.json?'+Date.now()).then(r=>r.json()).then(j=>{
   if(Array.isArray(j.available)){A.clear();j.available.forEach(d=>A.add(d));if(!A.has(sel))sel=null;cal();link();}
