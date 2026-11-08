@@ -87,6 +87,7 @@ app.innerHTML=`
      <label class="chk"><input type="checkbox" class="wed" value="Sister’s Groom"> Sister’s Groom</label>
     </div>
     <label id="oth_box" hidden>Please describe the service<input id="f_other"></label>
+    <label>Number of people getting makeup<input id="f_people" type="number" min="1" value="1" inputmode="numeric"></label>
  <label class="chk"><input type="checkbox" id="f_hair"> Add hairdo (additional)</label>
  <label>Preferred finish time<input id="f_time" type="time"></label>
  <label>Location / address makeup<input id="f_loc" autocomplete="street-address"></label>
@@ -121,6 +122,7 @@ function link(){
   if(!sel||!name||!num||(isO&&!other)){a.setAttribute('aria-disabled','true');a.removeAttribute('href');return}
   const lines=['Hello Trifena, I’d like to book a makeup session.','','Name: '+name,'Date: '+nice(sel),'Service: '+(isO?'Other ('+other+')':svc)];
   if(isW&&who)lines.push('Makeup for: '+who);
+  if($('f_people').value)lines.push('Number of people: '+$('f_people').value);
   if($('f_hair').checked)lines.push('Additional hairdo: Yes');
   if($('f_time').value)lines.push('Time: '+$('f_time').value);
   if($('f_loc').value.trim())lines.push('Location: '+$('f_loc').value.trim());
@@ -137,7 +139,7 @@ $('days').addEventListener('click',e=>{
 });
 $('prev').onclick=()=>{vm--;if(vm<0){vm=11;vy--}cal()};
 $('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++}cal()};
-['f_name','f_service','f_other','f_hair','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
+['f_name','f_service','f_other','f_people','f_hair','f_time','f_loc','f_note'].forEach(id=>$(id).addEventListener('input',link));
 document.querySelectorAll('.wed').forEach(c=>c.addEventListener('input',link));
 cal();link();
 fetch('availability.json?'+Date.now()).then(r=>r.json()).then(j=>{
